@@ -5,7 +5,7 @@ Last updated: 2016-05-15 <br/>
 Contributors: https://github.com/schdomin, https://github.com/grisetti <br/>
 <br/>
 
-Abstract: <br/>
+Abstract: https://www.google.ch <br/>
 <br/>
 
 Supported platforms: <br/>
@@ -14,8 +14,8 @@ Supported platforms: <br/>
 <br/>
 
 Requirements: <br/>
-- cmake 2.8.3+ (https://cmake.org/) <br/>
-- C++ 11 STL libraries (http://en.cppreference.com/w/cpp/) <br/>
+- cmake 2.8.3+ (https://cmake.org) <br/>
+- C++ 11 STL libraries (http://en.cppreference.com/w/cpp) <br/>
 <br/>
 
 CMake build sequence for example code (in project root): <br/>
