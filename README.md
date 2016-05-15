@@ -6,20 +6,19 @@ Contributors: https://github.com/schdomin, https://github.com/grisetti <br/>
 <br/>
 
 Abstract: <br/>
-tbd <br/>
 <br/>
 
 Supported platforms: <br/>
-UNIX <br/>
-Windows (untested) <br/>
+- UNIX <br/>
+- Windows (untested) <br/>
 <br/>
 
 Requirements: <br/>
 - cmake 2.8.3 (https://cmake.org/) <br/>
-- C++11 STL libraries (http://en.cppreference.com/w/cpp/) <br/>
+- C++ 11 STL libraries (http://en.cppreference.com/w/cpp/) <br/>
 <br/>
 
-Build sequence (in project root): <br/>
+CMake build sequence (in project root): <br/>
 mkdir build <br/>
 cd build <br/>
 cmake .. <br/>
