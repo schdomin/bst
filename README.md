@@ -1,4 +1,4 @@
-# bst - Binary Search Tree Header-only library (C++11)
+# Binary Search Tree Header-only library (C++11)
 
 Version 1.0 <br/>
 Last updated: 2016-05-15 <br/>
@@ -15,8 +15,8 @@ Windows (untested) <br/>
 <br/>
 
 Requirements: <br/>
-cmake 2.8.3:https://cmake.org/ <br/>
-C++11 STL libraries: http://en.cppreference.com/w/cpp/ <br/>
+- cmake 2.8.3 (https://cmake.org/) <br/>
+- C++11 STL libraries (http://en.cppreference.com/w/cpp/) <br/>
 <br/>
 
 Build sequence (in project root): <br/>
