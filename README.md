@@ -14,7 +14,7 @@ Supported platforms: <br/>
 <br/>
 
 Requirements: <br/>
-- cmake 2.8.3+ (https://cmake.org) <br/>
+- CMake 2.8.3+ (https://cmake.org) <br/>
 - C++ 11 STL libraries (http://en.cppreference.com/w/cpp) <br/>
 <br/>
 
