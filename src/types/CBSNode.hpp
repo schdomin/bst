@@ -4,7 +4,8 @@
 #include <vector>
 #include <assert.h>
 #include <cmath>
-#include "CDescriptorBRIEF.hpp"
+
+#include "CDescriptorBinary.hpp"
 
 
 
@@ -19,19 +20,19 @@ class CBSNode
 public:
 
     //ds access only through this constructor: no mask provided
-    CBSNode( const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors ): CBSNode< uMaximumDepth, uDescriptorSizeBits >( 0, p_vecDescriptors, _getMaskClean( ) )
+    CBSNode( const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors ): CBSNode< uMaximumDepth, uDescriptorSizeBits >( 0, p_vecDescriptors, _getMaskClean( ) )
     {
         //ds wrapped
     }
 
     //ds access only through this constructor: mask provided
-    CBSNode( const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors, CDescriptorVector p_vecBitMask ): CBSNode< uMaximumDepth, uDescriptorSizeBits >( 0, p_vecDescriptors, p_vecBitMask )
+    CBSNode( const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors, CDescriptorVector p_vecBitMask ): CBSNode< uMaximumDepth, uDescriptorSizeBits >( 0, p_vecDescriptors, p_vecBitMask )
     {
         //ds wrapped
     }
 
     //ds access only through this constructor: split order provided
-    CBSNode( const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors,
+    CBSNode( const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors,
             std::vector< uint32_t > p_vecSplitOrder ): CBSNode< uMaximumDepth, uDescriptorSizeBits >( 0, p_vecDescriptors, p_vecSplitOrder )
     {
         //ds wrapped
@@ -102,16 +103,16 @@ public:
                     vecMask[uIndexSplitBit] = 0;
 
                     //ds first we have to split the descriptors by the found index - preallocate vectors since we know how many ones we have
-                    std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptorsLeafOnes;
+                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafOnes;
                     vecDescriptorsLeafOnes.reserve( uOnesTotal );
-                    std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptorsLeafZeros;
+                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafZeros;
                     vecDescriptorsLeafZeros.reserve( vecDescriptors.size( )-uOnesTotal );
 
                     //ds loop over all descriptors and assing them to the new vectors
-                    for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
+                    for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
                     {
                         //ds check if split bit is set
-                        if( cDescriptor.vecValue[uIndexSplitBit] )
+                        if( cDescriptor.vecValues[uIndexSplitBit] )
                         {
                             vecDescriptorsLeafOnes.push_back( cDescriptor );
                         }
@@ -213,13 +214,13 @@ public:
                     bHasLeaves = true;
 
                     //ds first we have to split the descriptors by the found index - preallocate vectors since we know how many ones we have
-                    std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptorsLeafOnes;
+                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafOnes;
                     vecDescriptorsLeafOnes.reserve( uOnesTotal );
-                    std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptorsLeafZeros;
+                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafZeros;
                     vecDescriptorsLeafZeros.reserve( vecDescriptors.size( )-uOnesTotal );
 
                     //ds loop over all descriptors and assing them to the new vectors
-                    for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
+                    for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
                     {
                         //ds check if split bit is set
                         if( cDescriptor.vecData[uIndexSplitBit] )
@@ -264,7 +265,7 @@ private:
 
     //ds only internally called
     CBSNode( const uint64_t& p_uDepth,
-             const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors,
+             const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors,
              CDescriptorVector p_vecMask ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors ), matMask( p_vecMask )
     {
         //ds call recursive leaf spawner
@@ -273,7 +274,7 @@ private:
 
     //ds only internally called
     CBSNode( const uint64_t& p_uDepth,
-             const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors,
+             const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors,
              std::vector< uint32_t > p_vecSplitOrder ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors )
     {
         //ds call recursive leaf spawner
@@ -292,7 +293,7 @@ public:
 
     //ds rep
     const uint64_t uDepth;
-    const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptors;
+    const std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptors;
     int32_t uIndexSplitBit = -1;
     uint64_t uOnesTotal    = 0;
     bool bHasLeaves        = false;
@@ -310,7 +311,7 @@ public:
 private:
 
     //ds helpers
-    const double _getOnesFraction( const uint32_t& p_uIndexSplitBit, const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors, uint64_t& p_uOnesTotal ) const
+    const double _getOnesFraction( const uint32_t& p_uIndexSplitBit, const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors, uint64_t& p_uOnesTotal ) const
     {
         assert( 0 < p_vecDescriptors.size( ) );
 
@@ -318,9 +319,9 @@ private:
         uint64_t uNumberOfOneBits = 0;
 
         //ds just add the bits up (a one counts automatically as one)
-        for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptor: p_vecDescriptors )
+        for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: p_vecDescriptors )
         {
-            uNumberOfOneBits += cDescriptor.vecValue[p_uIndexSplitBit];
+            uNumberOfOneBits += cDescriptor.vecValues[p_uIndexSplitBit];
         }
 
         //ds set total
@@ -353,16 +354,16 @@ private:
     void _filterDescriptorsExhaustive( )
     {
         //ds unique descriptors (already add the front one first -> must be unique)
-        std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptorsUNIQUE( 1, vecDescriptors.front( ) );
+        std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsUNIQUE( 1, vecDescriptors.front( ) );
 
         //ds loop over current ones
-        for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
+        for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
         {
             //ds check if matched
             bool bNotFound = true;
 
             //ds check uniques
-            for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptorUNIQUE: vecDescriptorsUNIQUE )
+            for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptorUNIQUE: vecDescriptorsUNIQUE )
             {
                 //ds if the actual descriptor is identical - and the key frame ID as well
                 if( ( 0 == getDistanceHAMMING( cDescriptorUNIQUE.vecData, cDescriptor.vecData ) ) &&
@@ -400,25 +401,25 @@ public:
     }
 
     //ds filters multiple descriptors
-    inline static const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > getFilteredDescriptorsExhaustive( const std::vector< CDescriptorBRIEF< uDescriptorSizeBits > >& p_vecDescriptors )
+    inline static const std::vector< CDescriptorBinary< uDescriptorSizeBits > > getFilteredDescriptorsExhaustive( const std::vector< CDescriptorBinary< uDescriptorSizeBits > >& p_vecDescriptors )
     {
         //ds unique descriptors (already add the front one first -> must be unique)
-        std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptorsUNIQUE( 1, p_vecDescriptors.front( ) );
+        std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsUNIQUE( 1, p_vecDescriptors.front( ) );
 
         //ds loop over current ones
-        for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptor: p_vecDescriptors )
+        for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: p_vecDescriptors )
         {
             //ds check if matched
             bool bNotFound = true;
 
             //ds check uniques
-            for( const CDescriptorBRIEF< uDescriptorSizeBits >& cDescriptorUNIQUE: vecDescriptorsUNIQUE )
+            for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptorUNIQUE: vecDescriptorsUNIQUE )
             {
                 //ds assuming key frame identity
                 assert( cDescriptorUNIQUE.uIDKeyFrame == cDescriptor.uIDKeyFrame );
 
                 //ds if the actual descriptor is identical - and the key frame ID as well
-                if( 0 == CBSNode< uMaximumDepth, uDescriptorSizeBits >::getDistanceHAMMING( cDescriptorUNIQUE.vecValue, cDescriptor.vecValue ) )
+                if( 0 == CBSNode< uMaximumDepth, uDescriptorSizeBits >::getDistanceHAMMING( cDescriptorUNIQUE.vecValues, cDescriptor.vecValues ) )
                 {
                     //ds already added to the unique vector - no further adding required
                     bNotFound = false;
@@ -442,10 +443,10 @@ public:
 
     //ds generate random descriptors
     template< uint64_t uNumberOfDescriptors = 10000 >
-    inline static const std::shared_ptr< std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > > getRandomDescriptors( )
+    inline static const std::shared_ptr< std::vector< CDescriptorBinary< uDescriptorSizeBits > > > getRandomDescriptors( )
     {
         //ds allocate output vector
-        std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > vecDescriptors;
+        std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptors;
 
         //ds create random entries
         for( uint64_t uIDDescriptor = 0; uIDDescriptor < uNumberOfDescriptors; ++uIDDescriptor )
@@ -454,11 +455,11 @@ public:
             std::bitset< uDescriptorSizeBits > vecDescriptor;
 
             //ds create descriptor
-            vecDescriptors.push_back( CDescriptorBRIEF< uDescriptorSizeBits >( uIDDescriptor, vecDescriptor ) );
+            vecDescriptors.push_back( CDescriptorBinary< uDescriptorSizeBits >( uIDDescriptor, vecDescriptor ) );
         }
 
         //ds return with generated descriptors
-        return std::make_shared< std::vector< CDescriptorBRIEF< uDescriptorSizeBits > > >( vecDescriptors );
+        return std::make_shared< std::vector< CDescriptorBinary< uDescriptorSizeBits > > >( vecDescriptors );
     }
 
 };
