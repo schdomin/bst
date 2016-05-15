@@ -1,13 +1,13 @@
 #include <iostream>
-#include "CBSTree.hpp"
+#include "CVBSTree.hpp"
 
 //ds current setup (left for clarity, could also be omitted for standard settings)
 #define MAXIMUM_DISTANCE_HAMMING 25
 #define BSTREE_MAXIMUM_DEPTH 75
 #define DESCRIPTOR_SIZE_BITS 256
-typedef CDescriptorBinary< DESCRIPTOR_SIZE_BITS > CDescriptor;
-typedef CBSTree< MAXIMUM_DISTANCE_HAMMING, BSTREE_MAXIMUM_DEPTH, DESCRIPTOR_SIZE_BITS > CTree;
-typedef CBSNode< BSTREE_MAXIMUM_DEPTH, DESCRIPTOR_SIZE_BITS > CNode;
+typedef CDescriptorBinaryProbabilistic< DESCRIPTOR_SIZE_BITS > CDescriptor;
+typedef CVBSTree< MAXIMUM_DISTANCE_HAMMING, BSTREE_MAXIMUM_DEPTH, DESCRIPTOR_SIZE_BITS > CTree;
+typedef CVBSNode< BSTREE_MAXIMUM_DEPTH, DESCRIPTOR_SIZE_BITS > CNode;
 
 
 

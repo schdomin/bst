@@ -16,6 +16,7 @@ Supported platforms: <br/>
 Requirements: <br/>
 - CMake 2.8.3+ (https://cmake.org) <br/>
 - C++ 11 STL libraries (http://en.cppreference.com/w/cpp) <br/>
+- Eigen3 (http://eigen.tuxfamily.org) for probabilisticly enhanced search <br/>
 <br/>
 
 CMake build sequence for example code (in project root): <br/>

@@ -1,52 +1,46 @@
-#ifndef CBSNODE_HPP
-#define CBSNODE_HPP
+#ifndef CVBSNODE_HPP
+#define CVBSNODE_HPP
 
 #include <vector>
 #include <assert.h>
 #include <cmath>
 
-#include "CDescriptorBinary.hpp"
+#include "CDescriptorBinaryProbabilistic.hpp"
 
 
 
 template< uint64_t uMaximumDepth = 50, uint32_t uDescriptorSizeBits = 256, typename tPrecision = double >
-class CBSNode
+class CVBSNode
 {
 
     //ds readability
-    using CNode                = CBSNode< uMaximumDepth, uDescriptorSizeBits, tPrecision >;
+    using CNode                = CVBSNode< uMaximumDepth, uDescriptorSizeBits, tPrecision >;
     using CDescriptorValues    = std::bitset< uDescriptorSizeBits >;
-    using CDescriptor          = CDescriptorBinary< uDescriptorSizeBits >;
+    using CDescriptor          = CDescriptorBinaryProbabilistic< uDescriptorSizeBits >;
+    using CBitStatisticsVector = Eigen::Matrix< tPrecision, uDescriptorSizeBits, 1 >;
 
 //ds ctor/dtor
 public:
 
     //ds access only through this constructor: no mask provided
-    CBSNode( const std::vector< CDescriptor >& p_vecDescriptors ): CNode( 0, p_vecDescriptors, _getMaskClean( ) )
+    CVBSNode( const std::vector< CDescriptor >& p_vecDescriptors ): CNode( 0, p_vecDescriptors, _getMaskClean( ) )
     {
         //ds nothing to do
     }
 
     //ds access only through this constructor: mask provided
-    CBSNode( const std::vector< CDescriptor >& p_vecDescriptors, CDescriptorValues p_vecBitMask ): CNode( 0, p_vecDescriptors, p_vecBitMask )
+    CVBSNode( const std::vector< CDescriptor >& p_vecDescriptors, CDescriptorValues p_vecBitMask ): CNode( 0, p_vecDescriptors, p_vecBitMask )
     {
         //ds nothing to do
     }
 
-    //ds access only through this constructor: split order provided
-    CBSNode( const std::vector< CDescriptor >& p_vecDescriptors, std::vector< uint32_t > p_vecSplitOrder ): CNode( 0, p_vecDescriptors, p_vecSplitOrder )
+    const bool spawnLeafs( )
     {
-        //ds nothing to do
-    }
-
-    //ds create leafs (external use intented)
-    bool spawnLeafs( )
-    {
-        //ds filter descriptors before leafing
-        //_filterDescriptorsExhaustive( );
+        //ds buffer number of descriptors
+        const uint64_t uNumberOfDescriptors = vecDescriptors.size( );
 
         //ds if there are at least 2 descriptors (minimal split)
-        if( 1 < vecDescriptors.size( ) )
+        if( 1 < uNumberOfDescriptors )
         {
             assert( !bHasLeaves );
 
@@ -54,31 +48,47 @@ public:
             uIndexSplitBit = -1;
             uOnesTotal     = 0;
             dPartitioning  = 1.0;
+            tPrecision dVarianceMaximum = 0.0;
 
-            //ds we have to find the split for this node - scan all index
+            //ds variance computation statistics
+            CBitStatisticsVector vecAccumulatedProbabilities( CBitStatisticsVector::Zero( ) );
+
+            //ds for all descriptors in this node
+            for( const CDescriptor& cDescriptor: vecDescriptors )
+            {
+                //ds reduce accumulated probabilities
+                vecAccumulatedProbabilities += cDescriptor.vecBitProbabilities;
+            }
+
+            //ds get average
+            const CBitStatisticsVector vecMean( vecAccumulatedProbabilities/uNumberOfDescriptors );
+            std::vector< std::pair< uint32_t, tPrecision > > vecVariance( uDescriptorSizeBits );
+
+            //ds compute variance
             for( uint32_t uIndexBit = 0; uIndexBit < uDescriptorSizeBits; ++uIndexBit )
             {
                 //ds if this index is available in the mask
                 if( matMask[uIndexBit] )
                 {
-                    //ds temporary set bit count
-                    uint64_t uNumberOfSetBits = 0;
+                    //ds buffers
+                    double dVarianceCurrent = 0.0;
 
-                    //ds compute distance for this index (0.0 is perfect)
-                    const double fPartitioningCurrent = std::fabs( 0.5-_getOnesFraction( uIndexBit, vecDescriptors, uNumberOfSetBits ) );
-
-                    //ds if better
-                    if( dPartitioning > fPartitioningCurrent )
+                    //ds for all descriptors in this node
+                    for( const CDescriptor& cDescriptor: vecDescriptors )
                     {
-                        dPartitioning  = fPartitioningCurrent;
-                        uOnesTotal     = uNumberOfSetBits;
-                        uIndexSplitBit = uIndexBit;
+                        //ds update variance value
+                        const double dDelta = cDescriptor.vecBitProbabilities[uIndexBit]-vecMean[uIndexBit];
+                        dVarianceCurrent += dDelta*dDelta;
+                    }
 
-                        //ds finalize loop if maximum target is reached
-                        if( 0.0 == dPartitioning )
-                        {
-                            break;
-                        }
+                    //ds average
+                    dVarianceCurrent /= uNumberOfDescriptors;
+
+                    //ds check if better
+                    if( dVarianceMaximum < dVarianceCurrent )
+                    {
+                        dVarianceMaximum = dVarianceCurrent;
+                        uIndexSplitBit   = uIndexBit;
                     }
                 }
             }
@@ -86,14 +96,12 @@ public:
             //ds if best was found - we can spawn leaves
             if( -1 != uIndexSplitBit && uMaximumDepth > uDepth )
             {
+                //ds compute distance for this index (0.0 is perfect)
+                dPartitioning = std::fabs( 0.5-_getOnesFraction( uIndexSplitBit, vecDescriptors, uOnesTotal ) );
+
                 //ds check if we have enough data to split (NOT REQUIRED IF DEPTH IS SET ACCORDINGLY)
                 if( 0 < uOnesTotal && 0.5 > dPartitioning )
                 {
-                    /*if( 5 > uDepth)
-                    {
-                        std::cerr << "depth: " << uDepth << " bit: " << uIndexSplitBit << std::endl;
-                    }*/
-
                     //ds enabled
                     bHasLeaves = true;
 
@@ -104,13 +112,13 @@ public:
                     vecMask[uIndexSplitBit] = 0;
 
                     //ds first we have to split the descriptors by the found index - preallocate vectors since we know how many ones we have
-                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafOnes;
+                    std::vector< CDescriptor > vecDescriptorsLeafOnes;
                     vecDescriptorsLeafOnes.reserve( uOnesTotal );
-                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafZeros;
-                    vecDescriptorsLeafZeros.reserve( vecDescriptors.size( )-uOnesTotal );
+                    std::vector< CDescriptor > vecDescriptorsLeafZeros;
+                    vecDescriptorsLeafZeros.reserve( uNumberOfDescriptors-uOnesTotal );
 
                     //ds loop over all descriptors and assing them to the new vectors
-                    for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
+                    for( const CDescriptor& cDescriptor: vecDescriptors )
                     {
                         //ds check if split bit is set
                         if( cDescriptor.vecValues[uIndexSplitBit] )
@@ -152,143 +160,24 @@ public:
         }
     }
 
-    //ds create leafs following the set split order
-    bool spawnLeafs( std::vector< uint32_t > p_vecSplitOrder )
-    {
-        //ds if there are at least 2 descriptors (minimal split)
-        if( 1 < vecDescriptors.size( ) )
-        {
-            assert( !bHasLeaves );
-
-            //ds affirm initial situation
-            uIndexSplitBit = -1;
-            uOnesTotal     = 0;
-            dPartitioning  = 1.0;
-
-            //uint32_t uShift = 0;
-            //uint32_t uBitOptimal = p_vecSplitOrder[uDepth];
-
-            //ds try a selection of available bit splits
-            for( uint32_t uDepthTrial = uDepth; uDepthTrial < 2*uDepth+1; ++uDepthTrial )
-            {
-                uint64_t uOnesTotalCurrent = 0;
-
-                //ds compute distance for this index (0.0 is perfect)
-                const double dPartitioningCurrent = std::fabs( 0.5-_getOnesFraction( p_vecSplitOrder[uDepthTrial], vecDescriptors, uOnesTotalCurrent ) );
-
-                if( dPartitioning > dPartitioningCurrent )
-                {
-                    //ds buffer found bit
-                    const uint32_t uSplitBitBest = p_vecSplitOrder[uDepthTrial];
-
-                    //ds shift the last best index to the chosen depth in a later step
-                    p_vecSplitOrder[uDepthTrial] = uIndexSplitBit;
-
-                    dPartitioning  = dPartitioningCurrent;
-                    uOnesTotal     = uOnesTotalCurrent;
-                    uIndexSplitBit = uSplitBitBest;
-
-                    //ds update the split order vector to the current bit
-                    p_vecSplitOrder[uDepth] = uSplitBitBest;
-
-                    //uShift = uDepthTrial-uDepth;
-
-                    //ds finalize loop if maximum target is reached
-                    if( 0.0 == dPartitioning )
-                    {
-                        break;
-                    }
-                }
-            }
-
-            //ds if best was found - we can spawn leaves
-            if( -1 != uIndexSplitBit && uMaximumDepth > uDepth )
-            {
-                //ds check if we have enough data to split (NOT REQUIRED IF DEPTH IS SET ACCORDINGLY)
-                if( 0 < uOnesTotal && 0.5 > dPartitioning )
-                {
-                    /*if( 5 > uDepth)
-                    {
-                        std::cerr << "depth: " << uDepth << " bit: " << uIndexSplitBit << " optimal: " << uBitOptimal <<  " shift: " << uShift << std::endl;
-                    }*/
-
-                    //ds enabled
-                    bHasLeaves = true;
-
-                    //ds first we have to split the descriptors by the found index - preallocate vectors since we know how many ones we have
-                    std::vector< CDescriptor > vecDescriptorsLeafOnes;
-                    vecDescriptorsLeafOnes.reserve( uOnesTotal );
-                    std::vector< CDescriptor > vecDescriptorsLeafZeros;
-                    vecDescriptorsLeafZeros.reserve( vecDescriptors.size( )-uOnesTotal );
-
-                    //ds loop over all descriptors and assing them to the new vectors
-                    for( const CDescriptor& cDescriptor: vecDescriptors )
-                    {
-                        //ds check if split bit is set
-                        if( cDescriptor.vecValues[uIndexSplitBit] )
-                        {
-                            vecDescriptorsLeafOnes.push_back( cDescriptor );
-                        }
-                        else
-                        {
-                            vecDescriptorsLeafZeros.push_back( cDescriptor );
-                        }
-                    }
-
-                    //ds if there are elements for leaves
-                    assert( 0 < vecDescriptorsLeafOnes.size( ) );
-                    pLeafOnes = new CNode( uDepth+1, vecDescriptorsLeafOnes, p_vecSplitOrder );
-
-                    assert( 0 < vecDescriptorsLeafZeros.size( ) );
-                    pLeafZeros = new CNode( uDepth+1, vecDescriptorsLeafZeros, p_vecSplitOrder );
-
-                    //ds worked
-                    return true;
-                }
-                else
-                {
-                    //ds split failed
-                    return false;
-                }
-            }
-            else
-            {
-                //ds split failed
-                return false;
-            }
-        }
-        else
-        {
-            //ds not enough descriptors to split
-            return false;
-        }
-    }
-
 //ds internal ctors
 private:
 
     //ds only internally called: without split order
-    CBSNode( const uint64_t& p_uDepth,
+    CVBSNode( const uint64_t& p_uDepth,
              const std::vector< CDescriptor >& p_vecDescriptors,
-             CDescriptorValues p_vecMask ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors ), matMask( p_vecMask )
+             CDescriptorValues p_vecMask ): uDepth( p_uDepth ),
+                                            vecDescriptors( p_vecDescriptors ),
+                                            matMask( p_vecMask )
     {
         //ds call recursive leaf spawner
         spawnLeafs( );
     }
 
-    //ds only internally called: with split order
-    CBSNode( const uint64_t& p_uDepth,
-             const std::vector< CDescriptor >& p_vecDescriptors,
-             std::vector< uint32_t > p_vecSplitOrder ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors )
-    {
-        //ds call recursive leaf spawner
-        spawnLeafs( p_vecSplitOrder );
-    }
-
 //ds public dtor
 public:
 
-    ~CBSNode( )
+    ~CVBSNode( )
     {
         //ds nothing to do (the leafs will be freed by the tree)
     }
@@ -304,9 +193,6 @@ public:
     bool bHasLeaves        = false;
     tPrecision dPartitioning   = 1.0;
     const CDescriptorValues matMask;
-
-    //ds info (incremented in tree during search)
-    //uint64_t uLinkedPoints = 0;
 
     //ds peer: each node has two potential children
     CNode* pLeafOnes  = 0;
@@ -453,7 +339,7 @@ public:
             CDescriptorValues vecDescriptor;
 
             //ds create descriptor
-            vecDescriptors.push_back( CDescriptor( uIDDescriptor, vecDescriptor ) );
+            vecDescriptors.push_back( CDescriptor( uIDDescriptor, vecDescriptor, CBitStatisticsVector::Zero( ), CBitStatisticsVector::Zero( ) ) );
         }
 
         //ds return with generated descriptors
@@ -462,4 +348,4 @@ public:
 
 };
 
-#endif //CBSNODE_HPP
+#endif //CVBSNODE_HPP

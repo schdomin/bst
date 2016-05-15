@@ -5,7 +5,7 @@
 
 
 
-template< uint32_t uDescriptorSizeBits = 256 >
+template< uint32_t uDescriptorSizeBits = 256, typename tPrecision = double >
 struct CDescriptorBinary
 {
     //ds readability
@@ -23,7 +23,10 @@ struct CDescriptorBinary
         //ds nothing to do
     }
 
+    //ds descriptor ID
     const uint64_t uID;
+
+    //ds descriptor data string vector
     const CDescriptorVector vecValues;
 
 };
