@@ -1,7 +1,6 @@
 # BST: Binary Search Tree Header-only library
 
-Version 1.0 <br/>
-Last updated: 2016-05-15 <br/>
+Last updated: 2016-05-16 <br/>
 Contributors: https://github.com/schdomin, https://github.com/grisetti <br/>
 <br/>
 
