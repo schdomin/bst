@@ -151,7 +151,7 @@ public:
         return uNumberOfMatches;
     }
 
-    void setMatches1NN( const std::shared_ptr< std::vector< const CDescriptor* > > p_vecDescriptorsQUERY, const uint32_t& p_uIDTrain, std::vector< std::vector< CBSTMatch > >& p_vecMatches ) const
+    void setMatches1NN( const std::shared_ptr< std::vector< const CDescriptor* > > p_vecDescriptorsQUERY, const uint32_t& p_uIDTrain, std::vector< std::vector< CBSTMatch< > > >& p_vecMatches ) const
     {
         //ds for each descriptor
         for( const CDescriptor* pDescriptorQUERY: *p_vecDescriptorsQUERY )
@@ -181,7 +181,7 @@ public:
                         if( uMaximumDistanceHamming > tBSNode::getDistanceHamming( pDescriptorQUERY->vecValues, pDescriptorTRAIN->vecValues ) )
                         {
                             //++pNodeCurrent->uLinkedPoints;
-                            p_vecMatches.push_back( std::vector< CBSTMatch >( 1, CBSTMatch( pDescriptorQUERY->uID, pDescriptorTRAIN->uID, p_uIDTrain, uMaximumDistanceHamming ) ) );
+                            p_vecMatches.push_back( std::vector< CBSTMatch< > >( 1, CBSTMatch< >( pDescriptorQUERY->uID, pDescriptorTRAIN->uID, p_uIDTrain, uMaximumDistanceHamming ) ) );
                             break;
                         }
                     }
@@ -192,7 +192,7 @@ public:
     }
 
     //ds direct matching function on this tree
-    void match( const std::shared_ptr< const std::vector< const CDescriptor* > > p_vecDescriptorsQUERY, std::vector< CBSTMatch >& p_vecMatches ) const
+    void match( const std::shared_ptr< const std::vector< const CDescriptor* > > p_vecDescriptorsQUERY, std::vector< CBSTMatch< > >& p_vecMatches ) const
     {
         //ds for each descriptor
         for( const CDescriptor* pDescriptorQUERY: *p_vecDescriptorsQUERY )
@@ -222,7 +222,7 @@ public:
                         if( uMaximumDistanceHamming > tBSNode::getDistanceHAMMING( pDescriptorQUERY->vecValues, pDescriptorTRAIN->vecValues ) )
                         {
                             //++pNodeCurrent->uLinkedPoints;
-                            p_vecMatches.push_back( CBSTMatch( pDescriptorQUERY->uID, pDescriptorTRAIN->uID, uMaximumDistanceHamming ) );
+                            p_vecMatches.push_back( CBSTMatch< >( pDescriptorQUERY->uID, pDescriptorTRAIN->uID, uMaximumDistanceHamming ) );
                             break;
                         }
                     }
@@ -233,10 +233,10 @@ public:
     }
 
     //ds return matches directly
-    const std::shared_ptr< const std::vector< CBSTMatch > > getMatches( const std::shared_ptr< const std::vector< const CDescriptor* > > p_vecDescriptorsQUERY ) const
+    const std::shared_ptr< const std::vector< CBSTMatch< > > > getMatches( const std::shared_ptr< const std::vector< const CDescriptor* > > p_vecDescriptorsQUERY ) const
     {
         //ds match vector to be filled
-        std::vector< CBSTMatch > vecMatches;
+        std::vector< CBSTMatch< > > vecMatches;
 
         //ds for each QUERY descriptor
         for( const CDescriptor* pDescriptorQUERY: *p_vecDescriptorsQUERY )
@@ -265,7 +265,7 @@ public:
                     {
                         if( uMaximumDistanceHamming > tBSNode::getDistanceHAMMING( pDescriptorQUERY->vecValues, pDescriptorTRAIN->vecValues ) )
                         {
-                            vecMatches.push_back( CBSTMatch( pDescriptorQUERY->uID, pDescriptorTRAIN->uID, uMaximumDistanceHamming ) );
+                            vecMatches.push_back( CBSTMatch< >( pDescriptorQUERY->uID, pDescriptorTRAIN->uID, uMaximumDistanceHamming ) );
                             break;
                         }
                     }
@@ -275,7 +275,7 @@ public:
         }
 
         //ds return findings
-        return std::make_shared< const std::vector< CBSTMatch > >( vecMatches );
+        return std::make_shared< const std::vector< CBSTMatch< > > >( vecMatches );
     }
 
     //ds grow the tree

@@ -2,6 +2,7 @@
 #define CDESCRIPTORBINARYPROBABILISTIC_HPP
 
 #include <Eigen/Core>
+
 #include "CDescriptorBinary.hpp"
 
 

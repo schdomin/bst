@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../types_core/CBSTree.hpp"
+#include "CBSTree.hpp"
 
 //ds current setup (left for clarity, could also be omitted for standard settings)
 #define MAXIMUM_DISTANCE_HAMMING 25
@@ -42,11 +42,11 @@ int32_t main( int32_t argc, char** argv )
 
 
     //ds get matches (opencv IN/OUT style)
-    std::vector< CBSTMatch > vecMatches1;
+    std::vector< CBSTMatch< > > vecMatches1;
     cBTree.match( vecDescriptorPoolQUERY, vecMatches1 );
 
     //ds get matches directly
-    const std::shared_ptr< const std::vector< CBSTMatch > > vecMatches2 = cBTree.getMatches( vecDescriptorPoolQUERY );
+    const std::shared_ptr< const std::vector< CBSTMatch< > > > vecMatches2 = cBTree.getMatches( vecDescriptorPoolQUERY );
 
 
 
@@ -64,7 +64,7 @@ int32_t main( int32_t argc, char** argv )
         if( vecMatches1[uIndexMatch].uIDQUERYDescriptor       != vecMatches2->at( uIndexMatch ).uIDQUERYDescriptor       ||
             vecMatches1[uIndexMatch].uIDTRAINDescriptor       != vecMatches2->at( uIndexMatch ).uIDTRAINDescriptor       ||
             vecMatches1[uIndexMatch].uIDTRAINTree             != vecMatches2->at( uIndexMatch ).uIDTRAINTree             ||
-            vecMatches1[uIndexMatch].uMatchingDistanceHAMMING != vecMatches2->at( uIndexMatch ).uMatchingDistanceHAMMING )
+            vecMatches1[uIndexMatch].dMatchingDistance != vecMatches2->at( uIndexMatch ).dMatchingDistance )
         {
             std::cerr << "received inconsistent matching returns" << std::endl;
             return -1;
