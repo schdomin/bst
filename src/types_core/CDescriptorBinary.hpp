@@ -5,7 +5,7 @@
 
 
 
-template< uint32_t uDescriptorSizeBits = 256, typename tPrecision = double >
+template< uint32_t uDescriptorSizeBits = 256 >
 class CDescriptorBinary
 {
 

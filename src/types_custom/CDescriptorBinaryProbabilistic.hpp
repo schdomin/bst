@@ -8,7 +8,7 @@
 
 
 template< uint32_t uDescriptorSizeBits = 256, typename tPrecision = double >
-class CDescriptorBinaryProbabilistic: public CDescriptorBinary< uDescriptorSizeBits, tPrecision >
+class CDescriptorBinaryProbabilistic: public CDescriptorBinary< uDescriptorSizeBits >
 {
 
 //ds template exports
@@ -23,7 +23,7 @@ public:
     CDescriptorBinaryProbabilistic( const uint64_t& p_uID,
                                     const CDescriptorValues& p_vecDescriptorValue,
                                     const CBitStatisticsVector& p_vecBitProbabilities,
-                                    const CBitStatisticsVector& p_vecBitPermanences ): CDescriptorBinary< uDescriptorSizeBits, tPrecision >( p_uID, p_vecDescriptorValue ),
+                                    const CBitStatisticsVector& p_vecBitPermanences ): CDescriptorBinary< uDescriptorSizeBits >( p_uID, p_vecDescriptorValue ),
                                                                                        vecBitProbabilities( p_vecBitProbabilities ),
                                                                                        vecBitPermanences( p_vecBitPermanences )
     {

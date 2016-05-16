@@ -76,13 +76,13 @@ public:
                 if( this->matMask[uIndexBit] )
                 {
                     //ds buffers
-                    double dVarianceCurrent = 0.0;
+                    tPrecision dVarianceCurrent = 0.0;
 
                     //ds for all descriptors in this node
                     for( const CDescriptor* pDescriptor: this->vecDescriptors )
                     {
                         //ds update variance value
-                        const double dDelta = pDescriptor->vecBitProbabilities[uIndexBit]-vecMean[uIndexBit];
+                        const tPrecision dDelta = pDescriptor->vecBitProbabilities[uIndexBit]-vecMean[uIndexBit];
                         dVarianceCurrent += dDelta*dDelta;
                     }
 
