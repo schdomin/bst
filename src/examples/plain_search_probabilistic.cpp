@@ -1,5 +1,6 @@
 #include <iostream>
-#include "CBSTree.hpp"
+
+#include "../types_core/CBSTree.hpp"
 
 //ds current setup (left for clarity, could also be omitted for standard settings)
 #define MAXIMUM_DISTANCE_HAMMING 25

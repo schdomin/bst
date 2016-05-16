@@ -1,8 +1,8 @@
 #ifndef CDESCRIPTORBINARYPROBABILISTIC_HPP
 #define CDESCRIPTORBINARYPROBABILISTIC_HPP
 
-#include "CDescriptorBinary.hpp"
 #include <Eigen/Core>
+#include "CDescriptorBinary.hpp"
 
 
 

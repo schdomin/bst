@@ -18,7 +18,8 @@ find_package(Eigen3 REQUIRED)
 
 #ds set include dirs
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/types)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/types_core)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/types_custom)
 
 #ds add c++11 support, no optimization, all warnings
 add_definitions(-O3 -march=native -Wall -pedantic -std=c++11)
