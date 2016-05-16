@@ -1,23 +1,28 @@
 #ifndef CDESCRIPTORBINARYPROBABILISTIC_HPP
 #define CDESCRIPTORBINARYPROBABILISTIC_HPP
 
-#include <bitset>
+#include "CDescriptorBinary.hpp"
 #include <Eigen/Core>
 
 
 
 template< uint32_t uDescriptorSizeBits = 256, typename tPrecision = double >
-struct CDescriptorBinaryProbabilistic
+class CDescriptorBinaryProbabilistic: public CDescriptorBinary< uDescriptorSizeBits, tPrecision >
 {
-    //ds readability
-    using CDescriptorVector    = std::bitset< uDescriptorSizeBits >;
-    using CBitStatisticsVector = Eigen::Matrix< tPrecision, uDescriptorSizeBits, 1 >;
+
+//ds template exports
+public:
+
+    typedef std::bitset< uDescriptorSizeBits > CDescriptorValues;
+    typedef Eigen::Matrix< tPrecision, uDescriptorSizeBits, 1 > CBitStatisticsVector;
+
+//ds ctor/dtor
+public:
 
     CDescriptorBinaryProbabilistic( const uint64_t& p_uID,
-                                    const CDescriptorVector& p_vecDescriptorValue,
+                                    const CDescriptorValues& p_vecDescriptorValue,
                                     const CBitStatisticsVector& p_vecBitProbabilities,
-                                    const CBitStatisticsVector& p_vecBitPermanences ): uID( p_uID ),
-                                                                                       vecValues( p_vecDescriptorValue ),
+                                    const CBitStatisticsVector& p_vecBitPermanences ): CDescriptorBinary< uDescriptorSizeBits, tPrecision >( p_uID, p_vecDescriptorValue ),
                                                                                        vecBitProbabilities( p_vecBitProbabilities ),
                                                                                        vecBitPermanences( p_vecBitPermanences )
     {
@@ -29,11 +34,8 @@ struct CDescriptorBinaryProbabilistic
         //ds nothing to do
     }
 
-    //ds descriptor ID
-    const uint64_t uID;
-
-    //ds descriptor data string vector
-    const CDescriptorVector vecValues;
+//ds attributes
+public:
 
     //ds statistical data: bit probabilities
     const CBitStatisticsVector vecBitProbabilities;

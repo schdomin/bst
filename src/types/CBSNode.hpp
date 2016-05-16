@@ -9,42 +9,46 @@
 
 
 
-template< uint64_t uMaximumDepth = 50, uint32_t uDescriptorSizeBits = 256, typename tPrecision = double >
+template< typename tDescriptor, uint64_t uMaximumDepth = 50, typename tPrecision = double >
 class CBSNode
 {
 
     //ds readability
-    using CNode                = CBSNode< uMaximumDepth, uDescriptorSizeBits, tPrecision >;
-    using CDescriptorValues    = std::bitset< uDescriptorSizeBits >;
-    using CDescriptor          = CDescriptorBinary< uDescriptorSizeBits >;
+    using CNode = CBSNode< tDescriptor, uMaximumDepth, tPrecision >;
+
+//ds template exports
+public:
+
+    typedef tDescriptor CDescriptor;
+    typedef typename tDescriptor::CDescriptorValues CDescriptorValues;
 
 //ds ctor/dtor
 public:
 
     //ds access only through this constructor: no mask provided
-    CBSNode( const std::vector< CDescriptor >& p_vecDescriptors ): CNode( 0, p_vecDescriptors, _getMaskClean( ) )
+    CBSNode( const std::vector< const tDescriptor* >& p_vecDescriptors ): CNode( 0, getFilteredDescriptorsExhaustive( p_vecDescriptors ), _getMaskClean( ) )
     {
         //ds nothing to do
     }
 
     //ds access only through this constructor: mask provided
-    CBSNode( const std::vector< CDescriptor >& p_vecDescriptors, CDescriptorValues p_vecBitMask ): CNode( 0, p_vecDescriptors, p_vecBitMask )
+    CBSNode( const std::vector< const tDescriptor* >& p_vecDescriptors, typename tDescriptor::CDescriptorValues p_vecBitMask ): CNode( 0, getFilteredDescriptorsExhaustive( p_vecDescriptors ), p_vecBitMask )
     {
         //ds nothing to do
     }
 
     //ds access only through this constructor: split order provided
-    CBSNode( const std::vector< CDescriptor >& p_vecDescriptors, std::vector< uint32_t > p_vecSplitOrder ): CNode( 0, p_vecDescriptors, p_vecSplitOrder )
+    CBSNode( const std::vector< const tDescriptor* >& p_vecDescriptors, std::vector< uint32_t > p_vecSplitOrder ): CNode( 0, getFilteredDescriptorsExhaustive( p_vecDescriptors ), p_vecSplitOrder )
     {
         //ds nothing to do
     }
 
-    //ds create leafs (external use intented)
-    bool spawnLeafs( )
-    {
-        //ds filter descriptors before leafing
-        //_filterDescriptorsExhaustive( );
+//ds access
+public:
 
+    //ds create leafs (external use intented)
+    virtual const bool spawnLeafs( )
+    {
         //ds if there are at least 2 descriptors (minimal split)
         if( 1 < vecDescriptors.size( ) )
         {
@@ -56,7 +60,7 @@ public:
             dPartitioning  = 1.0;
 
             //ds we have to find the split for this node - scan all index
-            for( uint32_t uIndexBit = 0; uIndexBit < uDescriptorSizeBits; ++uIndexBit )
+            for( uint32_t uIndexBit = 0; uIndexBit < tDescriptor::uSizeBits; ++uIndexBit )
             {
                 //ds if this index is available in the mask
                 if( matMask[uIndexBit] )
@@ -98,28 +102,28 @@ public:
                     bHasLeaves = true;
 
                     //ds get a mask copy
-                    CDescriptorValues vecMask( matMask );
+                    typename tDescriptor::CDescriptorValues vecMask( matMask );
 
                     //ds update mask for leafs
                     vecMask[uIndexSplitBit] = 0;
 
                     //ds first we have to split the descriptors by the found index - preallocate vectors since we know how many ones we have
-                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafOnes;
+                    std::vector< const tDescriptor* > vecDescriptorsLeafOnes;
                     vecDescriptorsLeafOnes.reserve( uOnesTotal );
-                    std::vector< CDescriptorBinary< uDescriptorSizeBits > > vecDescriptorsLeafZeros;
+                    std::vector< const tDescriptor* > vecDescriptorsLeafZeros;
                     vecDescriptorsLeafZeros.reserve( vecDescriptors.size( )-uOnesTotal );
 
                     //ds loop over all descriptors and assing them to the new vectors
-                    for( const CDescriptorBinary< uDescriptorSizeBits >& cDescriptor: vecDescriptors )
+                    for( const tDescriptor* pDescriptor: vecDescriptors )
                     {
                         //ds check if split bit is set
-                        if( cDescriptor.vecValues[uIndexSplitBit] )
+                        if( pDescriptor->vecValues[uIndexSplitBit] )
                         {
-                            vecDescriptorsLeafOnes.push_back( cDescriptor );
+                            vecDescriptorsLeafOnes.push_back( pDescriptor );
                         }
                         else
                         {
-                            vecDescriptorsLeafZeros.push_back( cDescriptor );
+                            vecDescriptorsLeafZeros.push_back( pDescriptor );
                         }
                     }
 
@@ -153,7 +157,7 @@ public:
     }
 
     //ds create leafs following the set split order
-    bool spawnLeafs( std::vector< uint32_t > p_vecSplitOrder )
+    virtual const bool spawnLeafs( std::vector< uint32_t > p_vecSplitOrder )
     {
         //ds if there are at least 2 descriptors (minimal split)
         if( 1 < vecDescriptors.size( ) )
@@ -216,22 +220,22 @@ public:
                     bHasLeaves = true;
 
                     //ds first we have to split the descriptors by the found index - preallocate vectors since we know how many ones we have
-                    std::vector< CDescriptor > vecDescriptorsLeafOnes;
+                    std::vector< const tDescriptor* > vecDescriptorsLeafOnes;
                     vecDescriptorsLeafOnes.reserve( uOnesTotal );
-                    std::vector< CDescriptor > vecDescriptorsLeafZeros;
+                    std::vector< const tDescriptor* > vecDescriptorsLeafZeros;
                     vecDescriptorsLeafZeros.reserve( vecDescriptors.size( )-uOnesTotal );
 
                     //ds loop over all descriptors and assing them to the new vectors
-                    for( const CDescriptor& cDescriptor: vecDescriptors )
+                    for( const tDescriptor* pDescriptor: vecDescriptors )
                     {
                         //ds check if split bit is set
-                        if( cDescriptor.vecValues[uIndexSplitBit] )
+                        if( pDescriptor->vecValues[uIndexSplitBit] )
                         {
-                            vecDescriptorsLeafOnes.push_back( cDescriptor );
+                            vecDescriptorsLeafOnes.push_back( pDescriptor );
                         }
                         else
                         {
-                            vecDescriptorsLeafZeros.push_back( cDescriptor );
+                            vecDescriptorsLeafZeros.push_back( pDescriptor );
                         }
                     }
 
@@ -264,13 +268,13 @@ public:
         }
     }
 
-//ds internal ctors
-private:
+//ds specific constructors
+public:
 
     //ds only internally called: without split order
     CBSNode( const uint64_t& p_uDepth,
-             const std::vector< CDescriptor >& p_vecDescriptors,
-             CDescriptorValues p_vecMask ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors ), matMask( p_vecMask )
+             const std::vector< const tDescriptor* >& p_vecDescriptors,
+             typename tDescriptor::CDescriptorValues p_vecMask ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors ), matMask( p_vecMask )
     {
         //ds call recursive leaf spawner
         spawnLeafs( );
@@ -278,7 +282,7 @@ private:
 
     //ds only internally called: with split order
     CBSNode( const uint64_t& p_uDepth,
-             const std::vector< CDescriptor >& p_vecDescriptors,
+             const std::vector< const tDescriptor* >& p_vecDescriptors,
              std::vector< uint32_t > p_vecSplitOrder ): uDepth( p_uDepth ), vecDescriptors( p_vecDescriptors )
     {
         //ds call recursive leaf spawner
@@ -288,7 +292,7 @@ private:
 //ds public dtor
 public:
 
-    ~CBSNode( )
+    virtual ~CBSNode( )
     {
         //ds nothing to do (the leafs will be freed by the tree)
     }
@@ -298,25 +302,22 @@ public:
 
     //ds rep
     const uint64_t uDepth;
-    const std::vector< CDescriptor > vecDescriptors;
-    int32_t uIndexSplitBit = -1;
-    uint64_t uOnesTotal    = 0;
-    bool bHasLeaves        = false;
-    tPrecision dPartitioning   = 1.0;
-    const CDescriptorValues matMask;
-
-    //ds info (incremented in tree during search)
-    //uint64_t uLinkedPoints = 0;
+    const std::vector< const tDescriptor* > vecDescriptors;
+    int32_t uIndexSplitBit   = -1;
+    uint64_t uOnesTotal      = 0;
+    bool bHasLeaves          = false;
+    tPrecision dPartitioning = 1.0;
+    const typename tDescriptor::CDescriptorValues matMask;
 
     //ds peer: each node has two potential children
-    CNode* pLeafOnes  = 0;
-    CNode* pLeafZeros = 0;
+    const CNode* pLeafOnes  = 0;
+    const CNode* pLeafZeros = 0;
 
 //ds helpers
-private:
+protected:
 
     //ds helpers
-    const tPrecision _getOnesFraction( const uint32_t& p_uIndexSplitBit, const std::vector< CDescriptor >& p_vecDescriptors, uint64_t& p_uOnesTotal ) const
+    const tPrecision _getOnesFraction( const uint32_t& p_uIndexSplitBit, const std::vector< const tDescriptor* >& p_vecDescriptors, uint64_t& p_uOnesTotal ) const
     {
         assert( 0 < p_vecDescriptors.size( ) );
 
@@ -324,9 +325,9 @@ private:
         uint64_t uNumberOfOneBits = 0;
 
         //ds just add the bits up (a one counts automatically as one)
-        for( const CDescriptor& cDescriptor: p_vecDescriptors )
+        for( const tDescriptor* pDescriptor: p_vecDescriptors )
         {
-            uNumberOfOneBits += cDescriptor.vecValues[p_uIndexSplitBit];
+            uNumberOfOneBits += pDescriptor->vecValues[p_uIndexSplitBit];
         }
 
         //ds set total
@@ -338,83 +339,41 @@ private:
     }
 
     //ds returns a bitset with all bits set to true
-    CDescriptorValues _getMaskClean( ) const
+    typename tDescriptor::CDescriptorValues _getMaskClean( ) const
     {
-        CDescriptorValues vecMask;
+        typename tDescriptor::CDescriptorValues vecMask;
         vecMask.set( );
         return vecMask;
-    }
-
-    //ds filters multiple descriptors
-    void _filterDescriptorsExhaustive( )
-    {
-        //ds unique descriptors (already add the front one first -> must be unique)
-        std::vector< CDescriptor > vecDescriptorsUNIQUE( 1, vecDescriptors.front( ) );
-
-        //ds loop over current ones
-        for( const CDescriptor& cDescriptor: vecDescriptors )
-        {
-            //ds check if matched
-            bool bNotFound = true;
-
-            //ds check uniques
-            for( const CDescriptor& cDescriptorUNIQUE: vecDescriptorsUNIQUE )
-            {
-                //ds if the actual descriptor is identical - and the key frame ID as well
-                if( ( 0 == getDistanceHAMMING( cDescriptorUNIQUE.vecData, cDescriptor.vecData ) ) &&
-                    ( cDescriptorUNIQUE.uIDKeyFrame == cDescriptor.uIDKeyFrame )                  )
-                {
-                    //ds already added to the unique vector - no further adding required
-                    bNotFound = false;
-                    break;
-                }
-            }
-
-            //ds check if we failed to match the descriptor against the unique ones
-            if( bNotFound )
-            {
-                vecDescriptorsUNIQUE.push_back( cDescriptor );
-            }
-        }
-
-        assert( 0 < vecDescriptorsUNIQUE.size( ) );
-        assert( vecDescriptorsUNIQUE.size( ) <= vecDescriptors.size( ) );
-
-        //ds exchange internal version against unqiue
-        vecDescriptors.swap( vecDescriptorsUNIQUE );
     }
 
 //ds external helpers (used by tree)
 public:
 
-    //ds computes Hamming distance for bitset descriptors
-    inline static const uint32_t getDistanceHAMMING( const CDescriptorValues& p_vecDescriptorQuery,
-                                                     const CDescriptorValues& p_vecDescriptorReference )
+    //ds computes Hamming distance for bitset descriptors (not to be implemented by subclasses)
+    static const uint32_t getDistanceHAMMING( const typename tDescriptor::CDescriptorValues& p_vecDescriptorQuery,
+                                              const typename tDescriptor::CDescriptorValues& p_vecDescriptorReference )
     {
         //ds count set bits
         return ( p_vecDescriptorQuery ^ p_vecDescriptorReference ).count( );
     }
 
     //ds filters multiple descriptors
-    inline static const std::vector< CDescriptor > getFilteredDescriptorsExhaustive( const std::vector< CDescriptor >& p_vecDescriptors )
+    static const std::vector< const tDescriptor* > getFilteredDescriptorsExhaustive( const std::vector< const tDescriptor* >& p_vecDescriptors )
     {
         //ds unique descriptors (already add the front one first -> must be unique)
-        std::vector< CDescriptor > vecDescriptorsUNIQUE( 1, p_vecDescriptors.front( ) );
+        std::vector< const tDescriptor* > vecDescriptorsUNIQUE( 1, p_vecDescriptors.front( ) );
 
         //ds loop over current ones
-        for( const CDescriptor& cDescriptor: p_vecDescriptors )
+        for( const tDescriptor* pDescriptor: p_vecDescriptors )
         {
             //ds check if matched
             bool bNotFound = true;
 
             //ds check uniques
-            for( const CDescriptor& cDescriptorUNIQUE: vecDescriptorsUNIQUE )
+            for( const tDescriptor* pDescriptorUNIQUE: vecDescriptorsUNIQUE )
             {
-                //ds assuming key frame identity
-                assert( cDescriptorUNIQUE.uIDKeyFrame == cDescriptor.uIDKeyFrame );
-
                 //ds if the actual descriptor is identical - and the key frame ID as well
-                if( 0 == CNode::getDistanceHAMMING( cDescriptorUNIQUE.vecValues, cDescriptor.vecValues ) )
+                if( 0 == CNode::getDistanceHAMMING( pDescriptorUNIQUE->vecValues, pDescriptor->vecValues ) )
                 {
                     //ds already added to the unique vector - no further adding required
                     bNotFound = false;
@@ -425,7 +384,7 @@ public:
             //ds check if we failed to match the descriptor against the unique ones
             if( bNotFound )
             {
-                vecDescriptorsUNIQUE.push_back( cDescriptor );
+                vecDescriptorsUNIQUE.push_back( pDescriptor );
             }
         }
 
@@ -434,30 +393,6 @@ public:
 
         //ds exchange internal version against unqiue
         return vecDescriptorsUNIQUE;
-    }
-
-//ds utility functions
-public:
-
-    //ds generate dummy descriptors
-    template< uint64_t uNumberOfDescriptors = 10000 >
-    inline static const std::shared_ptr< std::vector< CDescriptor > > getDescriptorsDummy( )
-    {
-        //ds allocate output vector
-        std::vector< CDescriptor > vecDescriptors;
-
-        //ds create random entries
-        for( uint64_t uIDDescriptor = 0; uIDDescriptor < uNumberOfDescriptors; ++uIDDescriptor )
-        {
-            //ds set the descriptor vector
-            CDescriptorValues vecDescriptor;
-
-            //ds create descriptor
-            vecDescriptors.push_back( CDescriptor( uIDDescriptor, vecDescriptor ) );
-        }
-
-        //ds return with generated descriptors
-        return std::make_shared< std::vector< CDescriptor > >( vecDescriptors );
     }
 
 };

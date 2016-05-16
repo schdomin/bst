@@ -6,21 +6,23 @@
 #define BSTREE_MAXIMUM_DEPTH 75
 #define DESCRIPTOR_SIZE_BITS 256
 typedef CDescriptorBinary< DESCRIPTOR_SIZE_BITS > CDescriptor;
-typedef CBSTree< MAXIMUM_DISTANCE_HAMMING, BSTREE_MAXIMUM_DEPTH, DESCRIPTOR_SIZE_BITS > CTree;
-typedef CBSNode< BSTREE_MAXIMUM_DEPTH, DESCRIPTOR_SIZE_BITS > CNode;
+typedef CBSNode< CDescriptor, BSTREE_MAXIMUM_DEPTH > CNode;
+typedef CBSTree< CNode, MAXIMUM_DISTANCE_HAMMING > CTree;
 
 
 
 int32_t main( int32_t argc, char** argv )
 {
     //ds train descriptor pool
-    const std::shared_ptr< std::vector< CDescriptor > > vecDescriptorPoolTRAIN = CNode::getDescriptorsDummy< 10000 >( );
+    const std::shared_ptr< std::vector< const CDescriptor* > > vecDescriptorPoolTRAIN; // = CNode::getDescriptorsDummy< 10000 >( );
     
     //ds allocate a BTree object on these descriptors (no shared pointer passed as the tree will have its own constant copy of the train descriptors)
     const CTree cBTree( 0, *vecDescriptorPoolTRAIN );
     
     //ds query descriptor pool
-    const std::shared_ptr< std::vector< CDescriptor > > vecDescriptorPoolQUERY = CNode::getDescriptorsDummy< 10000 >( );
+    const std::shared_ptr< std::vector< const CDescriptor* > > vecDescriptorPoolQUERY; // = CNode::getDescriptorsDummy< 10000 >( );
+
+
 
     //ds get matches (opencv IN/OUT style)
     std::vector< CBSTMatch > vecMatches1;
