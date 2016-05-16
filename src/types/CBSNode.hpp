@@ -384,6 +384,7 @@ public:
             //ds check if we failed to match the descriptor against the unique ones
             if( bNotFound )
             {
+                //ds new unique found
                 vecDescriptorsUNIQUE.push_back( pDescriptor );
             }
         }

@@ -15,22 +15,22 @@ class CBSTree
 {
 
     //ds readability
-    using CDescriptorBase = typename tBSNode::CDescriptor;
+    typedef typename tBSNode::CDescriptor CDescriptor;
 
 //ds ctor/dtor
 public:
 
     //ds construct tree upon allocation on filtered descriptors
     CBSTree( const uint64_t& p_uID,
-             const std::vector< const CDescriptorBase* >& p_vecDescriptors ): uID( p_uID ),
-                                                                              m_pRoot( new tBSNode( p_vecDescriptors ) )
+             const std::vector< const CDescriptor* >& p_vecDescriptors ): uID( p_uID ),
+                                                                          m_pRoot( new tBSNode( p_vecDescriptors ) )
     {
         assert( 0 != m_pRoot );
     }
 
     //ds construct tree upon allocation on filtered descriptors: with bit mask
     CBSTree( const uint64_t& p_uID,
-             const std::vector< const CDescriptorBase* >& p_vecDescriptors,
+             const std::vector< const CDescriptor* >& p_vecDescriptors,
              typename tBSNode::CDescriptorValues p_vecBitMask ): uID( p_uID ),
                                                  m_pRoot( new tBSNode( p_vecDescriptors, p_vecBitMask ) )
     {
@@ -39,7 +39,7 @@ public:
 
     //ds construct tree with fixed split order
     CBSTree( const uint64_t& p_uID,
-             const std::vector< const CDescriptorBase* >& p_vecDescriptors,
+             const std::vector< const CDescriptor* >& p_vecDescriptors,
              std::vector< uint32_t > p_vecSplitOrder ): uID( p_uID ),
                                                         m_pRoot( new tBSNode( p_vecDescriptors, p_vecSplitOrder ) )
     {
@@ -49,8 +49,8 @@ public:
     //ds free all nodes in the tree
     ~CBSTree( )
     {
-        //ds erase all nodes
-        displant( );
+        //ds erase all nodes (and descriptors)
+        _displant( );
     }
 
 //ds control fields
@@ -67,13 +67,13 @@ private:
 //ds access
 public:
 
-    const uint64_t getNumberOfMatches( const std::shared_ptr< std::vector< const CDescriptorBase* > > p_vecDescriptorsQuery, const uint32_t& p_uMaximumDistanceHamming ) const
+    const uint64_t getNumberOfMatches( const std::shared_ptr< std::vector< const CDescriptor* > > p_vecDescriptorsQuery, const uint32_t& p_uMaximumDistanceHamming ) const
     {
         //ds match count
         uint64_t uNumberOfMatches = 0;
 
         //ds for each descriptor
-        for( const CDescriptorBase* pDescriptorQuery: *p_vecDescriptorsQuery )
+        for( const CDescriptor* pDescriptorQuery: *p_vecDescriptorsQuery )
         {
             //ds traverse tree to find this descriptor
             const tBSNode* pNodeCurrent = m_pRoot;
@@ -95,7 +95,7 @@ public:
                 else
                 {
                     //ds check current descriptors in this node and exit
-                    for( const CDescriptorBase* pDescriptorReference: pNodeCurrent->vecDescriptors )
+                    for( const CDescriptor* pDescriptorReference: pNodeCurrent->vecDescriptors )
                     {
                         if( p_uMaximumDistanceHamming > tBSNode::getDistanceHamming( pDescriptorQuery->vecValues, pDescriptorReference->vecValues ) )
                         {
@@ -111,13 +111,13 @@ public:
         return uNumberOfMatches;
     }
 
-    const uint64_t getNumberOfMatchesLazyEvaluation( const std::shared_ptr< std::vector< const CDescriptorBase* > > p_vecDescriptorsQuery, const uint32_t& p_uMaximumDistanceHamming ) const
+    const uint64_t getNumberOfMatchesLazyEvaluation( const std::shared_ptr< std::vector< const CDescriptor* > > p_vecDescriptorsQuery, const uint32_t& p_uMaximumDistanceHamming ) const
     {
         //ds match count
         uint64_t uNumberOfMatches = 0;
 
         //ds for each descriptor
-        for( const CDescriptorBase* pDescriptorQuery: *p_vecDescriptorsQuery )
+        for( const CDescriptor* pDescriptorQuery: *p_vecDescriptorsQuery )
         {
             //ds traverse tree to find this descriptor
             const tBSNode* pNodeCurrent = m_pRoot;
@@ -151,10 +151,10 @@ public:
         return uNumberOfMatches;
     }
 
-    void setMatches1NN( const std::shared_ptr< std::vector< const CDescriptorBase* > > p_vecDescriptorsQUERY, const uint32_t& p_uIDTrain, std::vector< std::vector< CBSTMatch > >& p_vecMatches ) const
+    void setMatches1NN( const std::shared_ptr< std::vector< const CDescriptor* > > p_vecDescriptorsQUERY, const uint32_t& p_uIDTrain, std::vector< std::vector< CBSTMatch > >& p_vecMatches ) const
     {
         //ds for each descriptor
-        for( const CDescriptorBase* pDescriptorQUERY: *p_vecDescriptorsQUERY )
+        for( const CDescriptor* pDescriptorQUERY: *p_vecDescriptorsQUERY )
         {
             //ds traverse tree to find this descriptor
             const tBSNode* pNodeCurrent = m_pRoot;
@@ -176,7 +176,7 @@ public:
                 else
                 {
                     //ds check current descriptors in this node and exit
-                    for( const CDescriptorBase* pDescriptorTRAIN: pNodeCurrent->vecDescriptors )
+                    for( const CDescriptor* pDescriptorTRAIN: pNodeCurrent->vecDescriptors )
                     {
                         if( uMaximumDistanceHamming > tBSNode::getDistanceHamming( pDescriptorQUERY->vecValues, pDescriptorTRAIN->vecValues ) )
                         {
@@ -192,10 +192,10 @@ public:
     }
 
     //ds direct matching function on this tree
-    void match( const std::shared_ptr< std::vector< const CDescriptorBase* > > p_vecDescriptorsQUERY, std::vector< CBSTMatch >& p_vecMatches ) const
+    void match( const std::shared_ptr< const std::vector< const CDescriptor* > > p_vecDescriptorsQUERY, std::vector< CBSTMatch >& p_vecMatches ) const
     {
         //ds for each descriptor
-        for( const CDescriptorBase* pDescriptorQUERY: *p_vecDescriptorsQUERY )
+        for( const CDescriptor* pDescriptorQUERY: *p_vecDescriptorsQUERY )
         {
             //ds traverse tree to find this descriptor
             const tBSNode* pNodeCurrent = m_pRoot;
@@ -217,7 +217,7 @@ public:
                 else
                 {
                     //ds check current descriptors in this node and exit
-                    for( const CDescriptorBase* pDescriptorTRAIN: pNodeCurrent->vecDescriptors )
+                    for( const CDescriptor* pDescriptorTRAIN: pNodeCurrent->vecDescriptors )
                     {
                         if( uMaximumDistanceHamming > tBSNode::getDistanceHAMMING( pDescriptorQUERY->vecValues, pDescriptorTRAIN->vecValues ) )
                         {
@@ -233,13 +233,13 @@ public:
     }
 
     //ds return matches directly
-    const std::shared_ptr< std::vector< CBSTMatch > > getMatches( const std::shared_ptr< std::vector< const CDescriptorBase* > > p_vecDescriptorsQUERY ) const
+    const std::shared_ptr< const std::vector< CBSTMatch > > getMatches( const std::shared_ptr< const std::vector< const CDescriptor* > > p_vecDescriptorsQUERY ) const
     {
         //ds match vector to be filled
         std::vector< CBSTMatch > vecMatches;
 
         //ds for each QUERY descriptor
-        for( const CDescriptorBase* pDescriptorQUERY: *p_vecDescriptorsQUERY )
+        for( const CDescriptor* pDescriptorQUERY: *p_vecDescriptorsQUERY )
         {
             //ds traverse tree to find this descriptor
             const tBSNode* pNodeCurrent = m_pRoot;
@@ -261,7 +261,7 @@ public:
                 else
                 {
                     //ds check current descriptors in this node and exit
-                    for( const CDescriptorBase* pDescriptorTRAIN: pNodeCurrent->vecDescriptors )
+                    for( const CDescriptor* pDescriptorTRAIN: pNodeCurrent->vecDescriptors )
                     {
                         if( uMaximumDistanceHamming > tBSNode::getDistanceHAMMING( pDescriptorQUERY->vecValues, pDescriptorTRAIN->vecValues ) )
                         {
@@ -275,18 +275,21 @@ public:
         }
 
         //ds return findings
-        return std::make_shared< std::vector< CBSTMatch > >( vecMatches );
+        return std::make_shared< const std::vector< CBSTMatch > >( vecMatches );
     }
 
     //ds grow the tree
-    void plant( const std::vector< const CDescriptorBase* >& p_vecDescriptors )
+    void plant( const std::vector< const CDescriptor* >& p_vecDescriptors )
     {
         //ds grow tree on root
         m_pRoot = new tBSNode( p_vecDescriptors );
     }
 
+//ds helpers
+private:
+
     //ds delete tree
-    void displant( )
+    void _displant( )
     {
         //ds nodes holder
         std::vector< const tBSNode* > vecNodes;
@@ -300,12 +303,15 @@ public:
             delete pNode;
         }
 
-        //ds free all nodes
+        /*ds free memory for descriptors
+        for( const CDescriptor* pDescriptor: m_pRoot->vecDescriptors )
+        {
+            delete pDescriptor;
+        }*/
+
+        //ds clear nodes vector
         vecNodes.clear( );
     }
-
-//ds helpers
-private:
 
     void _setNodesRecursive( const tBSNode* p_pNode, std::vector< const tBSNode* >& p_vecNodes ) const
     {

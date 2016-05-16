@@ -9,18 +9,34 @@ typedef CDescriptorBinaryProbabilistic< DESCRIPTOR_SIZE_BITS > CDescriptor;
 typedef CBSNodeProbabilistic< CDescriptor, BSTREE_MAXIMUM_DEPTH > CNode;
 typedef CBSTree< CNode, MAXIMUM_DISTANCE_HAMMING > CTree;
 
+//ds dummy descriptor generation
+const std::shared_ptr< const std::vector< const CDescriptor* > > getDummyDescriptors( const uint64_t& p_uNumberOfDescriptors )
+{
+    //ds preallocate vector
+    std::vector< const CDescriptor* > vecDescriptors( p_uNumberOfDescriptors );
+
+    //ds set values
+    for( uint64_t uID = 0; uID < p_uNumberOfDescriptors; ++uID )
+    {
+        vecDescriptors[uID] = new CDescriptor( uID, CDescriptor::CDescriptorValues( ), CDescriptor::CBitStatisticsVector::Zero( ), CDescriptor::CBitStatisticsVector::Zero( ) );
+    }
+
+    //ds done
+    return std::make_shared< const std::vector< const CDescriptor* > >( vecDescriptors );
+}
+
 
 
 int32_t main( int32_t argc, char** argv )
 {
     //ds train descriptor pool
-    const std::shared_ptr< std::vector< const CDescriptor* > > vecDescriptorPoolTRAIN; // = CNode::getDescriptorsDummy< 10000 >( );
+    const std::shared_ptr< const std::vector< const CDescriptor* > > vecDescriptorPoolTRAIN = getDummyDescriptors( 10000 );
     
     //ds allocate a BTree object on these descriptors (no shared pointer passed as the tree will have its own constant copy of the train descriptors)
     const CTree cBTree( 0, *vecDescriptorPoolTRAIN );
     
     //ds query descriptor pool
-    const std::shared_ptr< std::vector< const CDescriptor* > > vecDescriptorPoolQUERY; // = CNode::getDescriptorsDummy< 10000 >( );
+    const std::shared_ptr< const std::vector< const CDescriptor* > > vecDescriptorPoolQUERY = getDummyDescriptors( 5000 );
 
 
 
@@ -29,7 +45,7 @@ int32_t main( int32_t argc, char** argv )
     cBTree.match( vecDescriptorPoolQUERY, vecMatches1 );
 
     //ds get matches directly
-    const std::shared_ptr< std::vector< CBSTMatch > > vecMatches2 = cBTree.getMatches( vecDescriptorPoolQUERY );
+    const std::shared_ptr< const std::vector< CBSTMatch > > vecMatches2 = cBTree.getMatches( vecDescriptorPoolQUERY );
 
 
 
@@ -52,6 +68,16 @@ int32_t main( int32_t argc, char** argv )
             std::cerr << "received inconsistent matching returns" << std::endl;
             return -1;
         }
+    }
+
+    //ds never support memory leaks
+    for( const CDescriptor* pDescriptor: *vecDescriptorPoolTRAIN )
+    {
+        delete pDescriptor;
+    }
+    for( const CDescriptor* pDescriptor: *vecDescriptorPoolQUERY )
+    {
+        delete pDescriptor;
     }
 
     //ds done

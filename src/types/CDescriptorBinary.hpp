@@ -17,7 +17,7 @@ public:
 //ds shared properties
 public:
 
-    //ds descriptor size is set for all instances in the current setup
+    //ds descriptor size is set identically for all instances in the current setup
     static const uint32_t uSizeBits = uDescriptorSizeBits;
 
 //ds ctor/dtor
