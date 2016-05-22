@@ -26,8 +26,8 @@ make <br/>
 <br/>
 
 ## Build your own types!
-The 2 base classes: CBSNode and CDescriptorBinary (see types_core) can be easily inherited. <br/>
-Users can specify their own, augmented binary descriptor and nodes classes with specific leaf spawning. <br>
+The 2 base classes: CBSNode and CDescriptorBinary (see types_core) can easily be inherited. <br/>
+Users might specify their own, augmented binary descriptor and node classes with specific leaf spawning. <br>
 The probabilistic (variance based) search components (see types_custom) are implemented just in this way. <br/>
-The CBSTree class itself does not have to be subclassed, therefore the client interface may remain identical. <br/>
+The CBSTree class itself does not have to be subclassed, so that the client interface may remain identical. <br/>
 
