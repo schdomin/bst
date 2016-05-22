@@ -15,7 +15,7 @@ Supported platforms: <br/>
 Requirements: <br/>
 - CMake 2.8.3+ (https://cmake.org) <br/>
 - C++ 11 STL libraries (http://en.cppreference.com/w/cpp) <br/>
-- Eigen3 (http://eigen.tuxfamily.org) for probabilisticly enhanced search <br/>
+- Eigen3 (http://eigen.tuxfamily.org) for probabilisticly enhanced search access <br/>
 <br/>
 
 CMake build sequence for example code (in project root): <br/>
@@ -25,3 +25,8 @@ cmake .. <br/>
 make <br/>
 <br/>
 
+## Build your own types!
+The 2 base classes: CBSNode and CDescriptorBinary (see types_core) can be easily inherited <br/>
+Users can specify their own, augmented binary descriptor and nodes classes with specific leaf spawning <br>
+The probabilistic (variance based) search components (see types_custom) are implemented just in this way <br/>
+The Tree class itself does not have to be subclassed, therefore the client interface may remain identical <br/>
