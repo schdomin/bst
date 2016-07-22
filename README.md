@@ -25,7 +25,7 @@ cmake .. <br/>
 make <br/>
 <br/>
 
-## Build your own types!
+## Build your own Descriptor/Node types!
 The 2 base classes: CBSNode and CDescriptorBinary (see types_core) can easily be inherited. <br/>
 Users might specify their own, augmented binary descriptor and node classes with specific leaf spawning. <br>
 The probabilistic (variance based) search components (see types_custom) are implemented just in this way. <br/>
