@@ -1,4 +1,4 @@
-# BST: Binary Search Tree Header-only library
+# HBST: Hamming Binary Search Tree Header-only library
 
 Code last updated: 2016-05-16 <br/>
 Contributors: https://github.com/schdomin, https://github.com/grisetti <br/>

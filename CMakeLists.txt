@@ -27,5 +27,5 @@ add_definitions(-O3 -march=native -Wall -pedantic -std=c++11)
 
 
 #ds example binaries
-add_executable(plain_search src/examples/plain_search.cpp)
-add_executable(plain_search_probabilistic src/examples/plain_search_probabilistic.cpp)
+add_executable(search_plain src/examples/search_plain.cpp)
+add_executable(search_probabilistic src/examples/search_probabilistic.cpp)
